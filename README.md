@@ -1,3 +1,7 @@
+```
+json-server --watch db.json --port=4000
+```
+
 This app is intended as a React pre-task for applying to Buutti as a developer.
 
 <b>Tasks:</b>
