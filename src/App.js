@@ -1,147 +1,197 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import todoService from './services/todos';
+import Header from './components/Header';
+import SideBar from './components/SideBar';
+import Todos from './components/todos/Todos';
+import TodoDetails from './components/todo-details/TodoDetails';
+import Content from './components/Content';
 import './App.css';
 
-const todos = [
-    {id: 1, name: 'Go to the supermarket', complete: false},
-    {id: 2, name: 'Call Alice', complete: false},
-    {id: 3, name: 'Ask Alice to call Bob', complete: false},
-    {id: 4, name: 'Do the dishes', complete: false},
-    {id: 5, name: 'Change car tyres', complete: false}
-];
+const App = () => {
+  const [newTodo, setNewTodo] = useState({
+    id: null,
+    name: '',
+    date: '',
+    description: '',
+    complete: false,
+    importance: '',
+  });
+  const [todoToUpdate, setTodoToUpdate] = useState({});
+  const [todos, setTodos] = useState([]);
+  const [filteredTodos, setFilteredTodos] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [showTodoDetails, setShowTodoDetails] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            newTodoName: '',
-            todos: todos
-        };
-    }
-
-    generateNewId() {
-        return this.state.todos.length + 1;
-    }
-
-    onSubmit(event) {
-        event.preventDefault();
-
-        var newTodos = this.state.todos.slice();
-        newTodos.push({
-            id: this.generateNewId(),
-            name: this.state.newTodoName,
-            complete: false
-        });
-
-        this.setState({todos: newTodos, newTodoName: ''});
-    }
-
-    onClick(id) {
-        var todoItems = this.state.todos.slice();
-        for (let i = 0; i < this.state.todos.length; i++) {
-            if (todoItems[i].id === id) {
-                var newComplete = !todoItems[i].complete;
-                todoItems[i].complete = newComplete;
-            }
-        }
-
-        this.setState({
-            todos: todoItems
-        });
-    }
-
-    onChange(event) {
-        this.setState({newTodoName: event.target.value});
-    }
-    onRemoveClick(id) {
-        //implement this logic
-        console.log('Remove Item!');
-    }
-
-    render() {
-        return (
-            <div className="">
-                {this.todoItems()}
-                <Bar
-                    onSubmit={this.onSubmit.bind(this)}
-                    newTodoName={this.state.newTodoName}
-                    onInputChange={this.onChange.bind(this)}
-                />
-            </div>
-        );
-    }
-
-    todoItems = () => {
-        var retVal = [];
-
-        for (let i = 0; i < this.state.todos.length; i++) {
-            var todo = this.state.todos[i];
-            retVal.push(
-                <Hello
-                    key={todo.id}
-                    todo={todo}
-                    onClick={this.onClick.bind(this)}
-                    onRemoveClick={this.onRemoveClick.bind(this)}
-                />
-            );
-        }
-        return retVal;
+  useEffect(() => {
+    const getInitialTodos = async () => {
+      const initialTodos = await todoService.getAll();
+      setTodos(todos.concat(initialTodos));
     };
-}
+    getInitialTodos();
+    // eslint-disable-next-line
+  }, []);
 
-class Hello extends React.Component {
-    render() {
-        var color;
-        var text;
+  const generateNewId = () => Date.now().toString().substr(-5);
 
-        if (this.props.todo.complete === true) {
-            color = 'lightgreen';
-            text = 'Complete';
-        } else {
-            color = 'pink';
-            text = 'Incomplete';
-        }
+  const resetInputs = () => setNewTodo({
+    id: null,
+    name: '',
+    date: '',
+    description: '',
+    complete: false,
+    importance: '',
+  })
 
-        return (
-            <div className="wrapper" style={{backgroundColor: color}}>
-                <h3>{this.props.todo.name}</h3>
-                <button
-                    className="btn"
-                    onClick={() => this.props.onClick(this.props.todo.id)}>
-                    {text}
-                </button>
-                <button
-                    className="btn"
-                    onClick={() =>
-                        this.props.onRemoveClick(this.props.todo.id)
-                    }>
-                    Remove from list
-                </button>
-            </div>
-        );
+  const createNewTodo = async (event) => {
+    event.preventDefault();
+
+    const newTodoToAdd = {
+      id: generateNewId(),
+      name: newTodo.name,
+      date: '',
+      description: '',
+      complete: false,
+      importance: '',
+    };
+
+    const response = await todoService.createTodo(newTodoToAdd);
+    setTodos(todos.concat(response));
+
+    resetInputs();
+  };
+
+  const toggleDetails = (todo) => {
+    setShowTodoDetails(!showTodoDetails);
+
+    if (todo) {
+      setTodoToUpdate(todo);
     }
-}
 
-class Bar extends React.Component {
-    render() {
-        return (
-            <form
-                className="wrapper"
-                style={{'grid-template-columns': '7fr 2fr'}}
-                onSubmit={this.props.onSubmit}>
-                <input
-                    placeholder="Add new todo"
-                    value={this.props.newTodoName}
-                    onChange={this.props.onInputChange}
-                />
-                <button
-                    className="btn btn-success"
-                    type="submit"
-                    value="Submit">
-                    Submit
-                </button>
-            </form>
-        );
+    if (showSidebar) {
+      setShowSidebar(!showSidebar);
     }
-}
+  };
+
+  const setTodoDetails = async (event) => {
+    event.preventDefault();
+
+    const detailedTodo = {
+      ...todoToUpdate,
+      description:
+        newTodo.description && todoToUpdate.description !== newTodo.description
+          ? newTodo.description
+          : todoToUpdate.description,
+      date: newTodo.date && todoToUpdate.date !== newTodo.date ? newTodo.date : todoToUpdate.date,
+      importance:
+        newTodo.importance && todoToUpdate.importance !== newTodo.importance
+          ? newTodo.importance
+          : todoToUpdate.importance,
+    };
+
+    const updatedTodo = await todoService.updateTodo(detailedTodo);
+    setTodos(todos.map((t) => (t.id !== updatedTodo.id ? t : updatedTodo)));
+    resetInputs();
+
+    setTimeout(() => {
+      toggleDetails();
+    }, 800);
+  };
+
+  const toggleComplete = async (todo) => {
+    const foundedTodo = todos.find((t) => t.id === todo.id);
+    const completedTodo = { ...foundedTodo, complete: !foundedTodo.complete };
+    const updatedTodo = await todoService.updateTodo(completedTodo);
+
+    setTodos(todos.map((t) => (t.id !== todo.id ? t : updatedTodo)));
+  };
+
+  const handleInputChange = (event) => {
+    setNewTodo({
+      ...newTodo,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleImportance = async (todo) => {
+    const currentImportance = todo.importance;
+    const foundedTodo = todos.find((t) => t.id === todo.id);
+    const updatedTodo = {
+      ...foundedTodo,
+      importance: currentImportance === 'Normal' || !todo.importance ? 'High' : 'Normal',
+    };
+
+    const response = await todoService.updateTodo(updatedTodo);
+
+    if (updatedTodo.importance === 'High') {
+      setFilteredTodos(filteredTodos.map((t) => (t.id !== todo.id ? t : response)));
+    } else {
+      setFilteredTodos(filteredTodos.filter((t) => t.id !== todo.id));
+    }
+
+    setTodos(todos.map((t) => (t.id !== response.id ? t : response)));
+  };
+
+  const removeTodo = async (id) => {
+    await todoService.removeTodo(id); // variable to handle errors
+    setTodos(todos.filter((todo) => todo.id !== id));
+    setFilteredTodos(filteredTodos.filter((todo) => todo.id !== id));
+  };
+
+  const toggleSidebar = () => {
+    setShowSidebar(!showSidebar);
+
+    if (showTodoDetails) {
+      setShowTodoDetails(!showTodoDetails);
+    }
+  };
+
+  const filterTodos = (filterValue) => {
+    setFilter(filterValue);
+    if (filterValue === 'important') {
+      setFilteredTodos(todos.filter((todo) => todo.importance === 'High'));
+    }
+    if (filterValue === 'planned') {
+      setFilteredTodos(todos.filter((todo) => todo.date));
+    }
+
+    if (showSidebar) {
+      toggleSidebar();
+    }
+  };
+
+  return (
+    <div className="app">
+      <Header headerText="ToDos" />
+      <Content>
+        <SideBar
+          toggleSidebar={toggleSidebar}
+          filterTodos={filterTodos}
+          showSidebar={showSidebar}
+        />
+        <Todos
+          toggleDetails={toggleDetails}
+          toggleComplete={toggleComplete}
+          removeTodo={removeTodo}
+          todos={filter === 'all' ? todos : filteredTodos}
+          createNewTodo={createNewTodo}
+          newTodo={newTodo}
+          handleImportance={handleImportance}
+          handleInputChange={handleInputChange}
+          filter={filter}
+        />
+        {showTodoDetails && (
+          <TodoDetails
+            setTodoDetails={setTodoDetails}
+            handleInputChange={handleInputChange}
+            toggleDetails={toggleDetails}
+            newTodo={newTodo}
+            todoToUpdate={todoToUpdate}
+          />
+        )}
+      </Content>
+    </div>
+  );
+};
 
 export default App;

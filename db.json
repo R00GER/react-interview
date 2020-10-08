@@ -1,0 +1,84 @@
+{
+  "todos": [
+    {
+      "id": "82135",
+      "name": "Use only functional components",
+      "date": "",
+      "description": "",
+      "complete": true,
+      "importance": "High"
+    },
+    {
+      "id": "01164",
+      "name": "Give it a good architectural structure",
+      "date": "",
+      "description": "",
+      "complete": true,
+      "importance": "High"
+    },
+    {
+      "id": "12811",
+      "name": "Change the UI look to something better. You choose the style.",
+      "date": "",
+      "description": "",
+      "complete": true,
+      "importance": "High"
+    },
+    {
+      "id": "22136",
+      "name": "Write unittests to test 1 component well.",
+      "date": "",
+      "description": "",
+      "complete": true,
+      "importance": "High"
+    },
+    {
+      "id": "98343",
+      "name": "Use json-server",
+      "date": "",
+      "description": "Port 4000",
+      "complete": true,
+      "importance": "Normal"
+    },
+    {
+      "id": "68958",
+      "name": "Add additional features",
+      "date": "",
+      "description": "",
+      "complete": true,
+      "importance": "Normal"
+    },
+    {
+      "id": "10806",
+      "name": "Use Eslint",
+      "date": "",
+      "description": "",
+      "complete": true,
+      "importance": "Normal"
+    },
+    {
+      "id": "93033",
+      "name": "UseContext or Redux?",
+      "date": "Next week",
+      "description": "",
+      "complete": false,
+      "importance": "Normal"
+    },
+    {
+      "id": "17816",
+      "name": "Fix manifest error",
+      "date": "",
+      "description": "",
+      "complete": true,
+      "importance": ""
+    },
+    {
+      "id": "46381",
+      "name": "User can drill to Todo and set additional information",
+      "date": "",
+      "description": "",
+      "complete": true,
+      "importance": ""
+    }
+  ]
+}
